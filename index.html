@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>グリーンNH₃ バンカリング港湾管理システム</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            overflow-x: hidden;
+        }
+
+        /* Title Banner */
+        .title-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #0a4d3c 0%, #064e3b 50%, #0a4d3c 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: bannerFadeOut 2.5s ease-in-out forwards;
+        }
+
+        @keyframes bannerFadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
+        .title-banner h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            letter-spacing: 0.05em;
+            animation: titleSlideIn 1s ease-out;
+        }
+
+        .title-banner .subtitle {
+            font-size: 1.5rem;
+            color: #d1fae5;
+            font-weight: 300;
+            animation: subtitleSlideIn 1s ease-out 0.3s backwards;
+        }
+
+        @keyframes titleSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes subtitleSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Main Container */
+        .container {
+            opacity: 0;
+            animation: containerFadeIn 1s ease-in 2.5s forwards;
+        }
+
+        @keyframes containerFadeIn {
+            to { opacity: 1; }
+        }
+
+        /* Header */
+        .header {
+            background: #ffffff;
+            padding: 1.25rem 2.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-left h1 {
+            font-size: 1.4rem;
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .header-left .version {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #f0fdf4;
+            border-radius: 8px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Navigation */
+        .nav {
+            background: #ffffff;
+            padding: 0.75rem 2.5rem;
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .nav-button {
+            padding: 0.6rem 1.25rem;
+            background: transparent;
+            color: #64748b;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-button:hover {
+            background: #f1f5f9;
+            color: #059669;
+        }
+
+        .nav-button.active {
+            background: #ecfdf5;
+            color: #059669;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 1.5rem 2rem;
+            display: grid;
+            gap: 1rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .page {
+            display: none !important;
+        }
+
+        .page.active {
+            display: block !important;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0;
+        }
+
+        .card-title {
+            font-size: 0.8125rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0.5rem 0;
+            line-height: 1;
+        }
+
+        .card-subtitle {
+            font-size: 0.8125rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Alert Card */
+        .alert-card {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-color: #fca5a5;
+        }
+
+        .alert-card.warning {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-color: #fcd34d;
+        }
+
+        .alert-card .card-value {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: alertBlink 1.5s ease-in-out infinite;
+        }
+
+        .alert-card.warning .card-value {
+            background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @keyframes alertBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #f1f5f9;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.75rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+            border-radius: 3px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            width: 100%;
+            height: 180px;
+            position: relative;
+            margin-top: 0.75rem;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+        }
+
+        .data-table thead {
+            background: #f8fafc;
+        }
+
+        .data-table th {
+            padding: 0.75rem;
+            text-align: left;
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 600;
+            border-bottom: 2px solid #e2e8f0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .data-table td {
+            padding: 0.875rem 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.875rem;
+            color: #334155;
+        }
+
+        .data-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 0.35rem 0.875rem;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-badge.active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.completed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Action Button */
+        .action-button {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+        }
+
+        .action-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+        }
+
+        .action-button:active {
+            transform: translateY(0);
+        }
+
+        /* Live Update Indicator */
+        .live-indicator {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 0.875rem 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            font-weight: 500;
+            color: #334155;
+            font-size: 0.875rem;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Report Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            padding: 2.5rem;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            font-size: 1.75rem;
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 1.5rem;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: #334155;
+        }
+
+        .report-options {
+            display: grid;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .report-option {
+            padding: 1.25rem;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .report-option:hover {
+            border-color: #10b981;
+            background: #f0fdf4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.1);
+        }
+
+        .report-option h3 {
+            color: #059669;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .report-option p {
+            color: #64748b;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #334155;
+            border-top-color: #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Title Banner -->
+    <div class="title-banner">
+        <h1>グリーンNH₃ バンカリング港湾管理システム</h1>
+        <div class="subtitle">e-Permit + 割当自動化 OS</div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1>グリーンNH₃ バンカリング港湾管理システム</h1>
+                <div class="version">v2.1.3 Pro Edition</div>
+            </div>
+            <div class="header-right">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>システム稼働中</span>
+                </div>
+                <div style="color: #94a3b8; font-size: 0.9rem;">
+                    <span id="currentTime"></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav">
+            <button class="nav-button active" onclick="switchPage('dashboard', this)">ダッシュボード</button>
+            <button class="nav-button" onclick="switchPage('permits', this)">許可管理</button>
+            <button class="nav-button" onclick="switchPage('allocation', this)">割当管理</button>
+            <button class="nav-button" onclick="switchPage('monitoring', this)">リアルタイム監視</button>
+            <button class="nav-button" onclick="openReportModal()">レポート生成</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page active">
+                <div class="dashboard-grid">
+                    <!-- Active Operations -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">稼働中オペレーション</div>
+                        </div>
+                        <div class="card-value" id="activeOps">12</div>
+                        <div class="card-subtitle">前日比 +3</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="opsProgress" style="width: 75%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Permit Status -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">本日の許可処理</div>
+                        </div>
+                        <div class="card-value" id="permits">28</div>
+                        <div class="card-subtitle">自動承認率: <span id="autoApprovalRate">94%</span></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="permitProgress" style="width: 94%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- NH3 Volume -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">NH₃取扱量（本日）</div>
+                        </div>
+                        <div class="card-value" id="nh3Volume">1,847</div>
+                        <div class="card-subtitle">トン / 目標: 2,000トン</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="volumeProgress" style="width: 92%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Alert Card -->
+                    <div class="card alert-card warning">
+                        <div class="card-header">
+                            <div class="card-title">保安警告</div>
+                        </div>
+                        <div class="card-value" id="warningCount">3</div>
+                        <div class="card-subtitle">要確認事項あり</div>
+                    </div>
+
+                    <!-- Processing Time -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">平均処理時間</div>
+                        </div>
+                        <div class="card-value" id="processingTime">2.4</div>
+                        <div class="card-subtitle">分 / 目標: 5.0分</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 52%; background: linear-gradient(90deg, #10b981 0%, #059669 100%);"></div>
+                        </div>
+                    </div>
+
+                    <!-- Efficiency -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">運用効率</div>
+                        </div>
+                        <div class="card-value" id="efficiency">87</div>
+                        <div class="card-subtitle">% / 前月比 +12%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="efficiencyProgress" style="width: 87%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-time Chart -->
+                <div class="card" style="margin-top: 1rem;">
+                    <div class="card-header">
+                        <div class="card-title">リアルタイムオペレーション推移</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="realtimeChart" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Permits Page -->
+            <div id="permits" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">許可申請管理</div>
+                        <button class="action-button" style="margin: 0;">新規申請</button>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>申請ID</th>
+                                <th>船舶名</th>
+                                <th>申請種別</th>
+                                <th>ステータス</th>
+                                <th>処理時間</th>
+                            </tr>
+                        </thead>
+                        <tbody id="permitTableBody">
+                            <tr>
+                                <td>P-2025-1847</td>
+                                <td>GREEN PIONEER</td>
+                                <td>バンカリング許可</td>
+                                <td><span class="status-badge active">承認済</span></td>
+                                <td>2.3分</td>
+                            </tr>
+                            <tr>
+                                <td>P-2025-1846</td>
+                                <td>ECO MARINER</td>
+                                <td>入港許可</td>
+                                <td><span class="status-badge pending">審査中</span></td>
+                                <td>1.8分</td>
+                            </tr>
+                            <tr>
+                                <td>P-2025-1845</td>
+                                <td>AMMONIA EXPRESS</td>
+                                <td>危険物取扱許可</td>
+                                <td><span class="status-badge completed">処理完了</span></td>
+                                <td>2.1分</td>
+                            </tr>
+                            <tr>
+                                <td>P-2025-1844</td>
+                                <td>HYDROGEN VOYAGER</td>
+                                <td>バンカリング許可</td>
+                                <td><span class="status-badge active">承認済</span></td>
+                                <td>1.9分</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Allocation Page -->
+            <div id="allocation" class="page">
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">バース割当状況</div>
+                        </div>
+                        <div class="card-value" id="berthUtilization">78</div>
+                        <div class="card-subtitle">% 稼働率</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 78%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">自動割当成功率</div>
+                        </div>
+                        <div class="card-value" id="autoAllocation">96</div>
+                        <div class="card-subtitle">% / 目標: 95%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 96%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">待機船舶数</div>
+                        </div>
+                        <div class="card-value" id="waitingVessels">4</div>
+                        <div class="card-subtitle">平均待機時間: 23分</div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 1rem;">
+                    <div class="card-header">
+                        <div class="card-title">バース割当スケジュール</div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>バース</th>
+                                <th>船舶名</th>
+                                <th>開始時刻</th>
+                                <th>終了予定</th>
+                                <th>ステータス</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>A-1</td>
+                                <td>GREEN PIONEER</td>
+                                <td>09:30</td>
+                                <td>11:45</td>
+                                <td><span class="status-badge active">稼働中</span></td>
+                            </tr>
+                            <tr>
+                                <td>A-2</td>
+                                <td>ECO MARINER</td>
+                                <td>10:15</td>
+                                <td>12:30</td>
+                                <td><span class="status-badge active">稼働中</span></td>
+                            </tr>
+                            <tr>
+                                <td>B-1</td>
+                                <td>AMMONIA EXPRESS</td>
+                                <td>11:00</td>
+                                <td>13:00</td>
+                                <td><span class="status-badge pending">準備中</span></td>
+                            </tr>
+                            <tr>
+                                <td>B-2</td>
+                                <td>空き</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td><span class="status-badge completed">利用可能</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Monitoring Page -->
+            <div id="monitoring" class="page">
+                <div class="dashboard-grid">
+                    <div class="card alert-card">
+                        <div class="card-header">
+                            <div class="card-title">アクティブアラート</div>
+                        </div>
+                        <div class="card-value" id="criticalAlerts">3</div>
+                        <div class="card-subtitle">要確認事項</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">NH₃濃度モニター</div>
+                        </div>
+                        <div class="card-value" id="nh3Concentration">0.8</div>
+                        <div class="card-subtitle">ppm / 基準値: 25ppm</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 3.2%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">気象状態</div>
+                        </div>
+                        <div class="card-value" id="windSpeed">7.2</div>
+                        <div class="card-subtitle">m/s 北東 / 気温: 18°C</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">セキュリティレベル</div>
+                        </div>
+                        <div class="card-value" style="color: #3b82f6;">LEVEL 2</div>
+                        <div class="card-subtitle">通常警戒態勢</div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 1rem;">
+                    <div class="card-header">
+                        <div class="card-title">リアルタイムアラート</div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>時刻</th>
+                                <th>種別</th>
+                                <th>内容</th>
+                                <th>優先度</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td id="alert1Time">10:23:45</td>
+                                <td>保安</td>
+                                <td>未承認車両の港内侵入検知</td>
+                                <td><span class="status-badge pending">中</span></td>
+                            </tr>
+                            <tr>
+                                <td id="alert2Time">10:18:32</td>
+                                <td>環境</td>
+                                <td>風速基準値超過の可能性</td>
+                                <td><span class="status-badge pending">中</span></td>
+                            </tr>
+                            <tr>
+                                <td id="alert3Time">10:12:15</td>
+                                <td>システム</td>
+                                <td>センサーA-3 定期校正完了</td>
+                                <td><span class="status-badge completed">低</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <!-- Live Indicator -->
+        <div class="live-indicator">
+            <div class="live-dot"></div>
+            <span>リアルタイム更新中</span>
+        </div>
+
+        <!-- Report Modal -->
+        <div id="reportModal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" onclick="closeReportModal()">&times;</span>
+                <div class="modal-header">レポート生成</div>
+                <div class="report-options">
+                    <div class="report-option" onclick="generateReport('daily')">
+                        <h3 style="color: #10b981; margin-bottom: 0.5rem;">日次運用レポート</h3>
+                        <p style="color: #94a3b8; font-size: 0.9rem;">本日の許可処理、割当状況、取扱量の総合レポート</p>
+                    </div>
+                    <div class="report-option" onclick="generateReport('permit')">
+                        <h3 style="color: #10b981; margin-bottom: 0.5rem;">許可管理分析レポート</h3>
+                        <p style="color: #94a3b8; font-size: 0.9rem;">許可処理の効率性と自動承認率の詳細分析</p>
+                    </div>
+                    <div class="report-option" onclick="generateReport('safety')">
+                        <h3 style="color: #10b981; margin-bottom: 0.5rem;">保安・安全管理レポート</h3>
+                        <p style="color: #94a3b8; font-size: 0.9rem;">アラート履歴と安全指標の包括的レポート</p>
+                    </div>
+                    <div class="report-option" onclick="generateReport('efficiency')">
+                        <h3 style="color: #10b981; margin-bottom: 0.5rem;">運用効率改善提案書</h3>
+                        <p style="color: #94a3b8; font-size: 0.9rem;">データに基づく効率化施策の提案</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let chart = null;
+        let dataPoints = [];
+        let animationFrame = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            initializeChart();
+            startRealTimeUpdates();
+        });
+
+        // Time update
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('currentTime').textContent = timeString;
+        }
+
+        // Page switching
+        function switchPage(pageName, button) {
+            console.log('Switching to page:', pageName);
+            
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.nav-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected page
+            const selectedPage = document.getElementById(pageName);
+            console.log('Selected page element:', selectedPage);
+            
+            if (selectedPage) {
+                selectedPage.classList.add('active');
+                selectedPage.style.display = 'block'; // Force display
+                console.log('Page displayed');
+            } else {
+                console.error('Page not found:', pageName);
+            }
+            
+            // Add active class to clicked button
+            if (button) {
+                button.classList.add('active');
+            }
+        }
+
+        // Initialize Chart
+        function initializeChart() {
+            const canvas = document.getElementById('realtimeChart');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            // Initialize data points
+            for (let i = 0; i < 30; i++) {
+                dataPoints.push(Math.random() * 40 + 60);
+            }
+            
+            drawChart(ctx, canvas.width, canvas.height);
+        }
+
+        // Draw Chart
+        function drawChart(ctx, width, height) {
+            ctx.clearRect(0, 0, width, height);
+            
+            // Grid
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = (height / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+            
+            // Line chart
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            const xStep = width / (dataPoints.length - 1);
+            dataPoints.forEach((point, i) => {
+                const x = i * xStep;
+                const y = height - (point / 100) * height;
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+            
+            // Fill under line
+            ctx.lineTo(width, height);
+            ctx.lineTo(0, height);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.1)';
+            ctx.fill();
+        }
+
+        // Real-time updates
+        function startRealTimeUpdates() {
+            setInterval(() => {
+                updateDashboardValues();
+                updateChart();
+                updateAlertTimes();
+            }, 2000);
+        }
+
+        // Update dashboard values
+        function updateDashboardValues() {
+            const activeOps = document.getElementById('activeOps');
+            const permits = document.getElementById('permits');
+            const nh3Volume = document.getElementById('nh3Volume');
+            const efficiency = document.getElementById('efficiency');
+            const processingTime = document.getElementById('processingTime');
+            const warningCount = document.getElementById('warningCount');
+            const nh3Concentration = document.getElementById('nh3Concentration');
+            const windSpeed = document.getElementById('windSpeed');
+            const criticalAlerts = document.getElementById('criticalAlerts');
+            const berthUtilization = document.getElementById('berthUtilization');
+            const autoAllocation = document.getElementById('autoAllocation');
+            const waitingVessels = document.getElementById('waitingVessels');
+            const autoApprovalRate = document.getElementById('autoApprovalRate');
+            
+            // Random updates
+            if (Math.random() > 0.7) {
+                activeOps.textContent = parseInt(activeOps.textContent) + (Math.random() > 0.5 ? 1 : -1);
+                document.getElementById('opsProgress').style.width = (parseInt(activeOps.textContent) / 16 * 100) + '%';
+            }
+            
+            if (Math.random() > 0.8) {
+                permits.textContent = parseInt(permits.textContent) + 1;
+                const newRate = Math.min(98, Math.max(90, parseInt(autoApprovalRate.textContent.replace('%', '')) + (Math.random() > 0.5 ? 1 : -1)));
+                autoApprovalRate.textContent = newRate + '%';
+                document.getElementById('permitProgress').style.width = newRate + '%';
+            }
+            
+            if (Math.random() > 0.7) {
+                const currentVolume = parseInt(nh3Volume.textContent.replace(',', ''));
+                const newVolume = Math.min(2000, currentVolume + Math.floor(Math.random() * 10));
+                nh3Volume.textContent = newVolume.toLocaleString();
+                document.getElementById('volumeProgress').style.width = (newVolume / 2000 * 100) + '%';
+            }
+            
+            if (Math.random() > 0.6) {
+                efficiency.textContent = Math.min(95, Math.max(80, parseInt(efficiency.textContent) + (Math.random() > 0.5 ? 1 : -1)));
+                document.getElementById('efficiencyProgress').style.width = efficiency.textContent + '%';
+            }
+            
+            if (Math.random() > 0.7) {
+                processingTime.textContent = (Math.random() * 1.5 + 1.5).toFixed(1);
+            }
+            
+            if (Math.random() > 0.85) {
+                warningCount.textContent = Math.max(0, Math.min(5, parseInt(warningCount.textContent) + (Math.random() > 0.6 ? -1 : 1)));
+            }
+            
+            if (Math.random() > 0.6) {
+                nh3Concentration.textContent = (Math.random() * 2 + 0.5).toFixed(1);
+            }
+            
+            if (Math.random() > 0.7) {
+                windSpeed.textContent = (Math.random() * 4 + 5).toFixed(1);
+            }
+            
+            if (Math.random() > 0.9) {
+                const currentAlerts = parseInt(criticalAlerts.textContent);
+                criticalAlerts.textContent = Math.max(0, Math.min(5, currentAlerts + (Math.random() > 0.7 ? -1 : 1)));
+            }
+            
+            if (Math.random() > 0.8) {
+                berthUtilization.textContent = Math.min(95, Math.max(70, parseInt(berthUtilization.textContent) + (Math.random() > 0.5 ? 1 : -1)));
+            }
+            
+            if (Math.random() > 0.85) {
+                autoAllocation.textContent = Math.min(99, Math.max(92, parseInt(autoAllocation.textContent) + (Math.random() > 0.5 ? 1 : -1)));
+            }
+            
+            if (Math.random() > 0.8) {
+                waitingVessels.textContent = Math.max(0, Math.min(8, parseInt(waitingVessels.textContent) + (Math.random() > 0.6 ? -1 : 1)));
+            }
+        }
+
+        // Update chart
+        function updateChart() {
+            dataPoints.shift();
+            dataPoints.push(Math.random() * 40 + 60);
+            
+            const canvas = document.getElementById('realtimeChart');
+            const ctx = canvas.getContext('2d');
+            drawChart(ctx, canvas.width, canvas.height);
+        }
+
+        // Update alert times
+        function updateAlertTimes() {
+            const now = new Date();
+            const formatTime = (date) => {
+                return date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            };
+            
+            if (Math.random() > 0.9) {
+                const alert1 = new Date(now.getTime() - Math.random() * 300000);
+                document.getElementById('alert1Time').textContent = formatTime(alert1);
+            }
+        }
+
+        // Report Modal
+        function openReportModal() {
+            document.getElementById('reportModal').classList.add('active');
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal').classList.remove('active');
+        }
+
+        function generateReport(type) {
+            const reportNames = {
+                'daily': '日次運用レポート',
+                'permit': '許可管理分析レポート',
+                'safety': '保安・安全管理レポート',
+                'efficiency': '運用効率改善提案書'
+            };
+            
+            // Create report content
+            const reportContent = `
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${reportNames[type]}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #ffffff;
+            color: #1e293b;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        .meta {
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+        .section {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #10b981;
+        }
+        .section h2 {
+            color: #064e3b;
+            margin-top: 0;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .metric {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .metric-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+        .metric-value {
+            font-size: 1.5rem;
+            color: #10b981;
+            font-weight: 700;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #475569;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>${reportNames[type]}</h1>
+        <div class="meta">
+            生成日時: ${new Date().toLocaleString('ja-JP')}<br>
+            対象期間: ${new Date().toLocaleDateString('ja-JP')}
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>エグゼクティブサマリー</h2>
+        <p>本レポートは、グリーンNH₃バンカリング港湾管理システムの運用状況を分析し、主要なパフォーマンス指標と改善提案をまとめたものです。</p>
+    </div>
+
+    <div class="section">
+        <h2>主要指標</h2>
+        <div class="metrics">
+            <div class="metric">
+                <div class="metric-label">処理許可数</div>
+                <div class="metric-value">28件</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">自動承認率</div>
+                <div class="metric-value">94%</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">平均処理時間</div>
+                <div class="metric-value">2.4分</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">運用効率</div>
+                <div class="metric-value">87%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>詳細分析</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>項目</th>
+                    <th>実績値</th>
+                    <th>目標値</th>
+                    <th>達成率</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>許可処理件数</td>
+                    <td>28件</td>
+                    <td>25件</td>
+                    <td>112%</td>
+                </tr>
+                <tr>
+                    <td>NH₃取扱量</td>
+                    <td>1,847トン</td>
+                    <td>2,000トン</td>
+                    <td>92%</td>
+                </tr>
+                <tr>
+                    <td>処理時間短縮</td>
+                    <td>2.4分</td>
+                    <td>5.0分</td>
+                    <td>152%</td>
+                </tr>
+                <tr>
+                    <td>バース稼働率</td>
+                    <td>78%</td>
+                    <td>80%</td>
+                    <td>98%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>改善提案</h2>
+        <ol>
+            <li><strong>自動割当アルゴリズムの最適化</strong>: 待機時間をさらに20%削減可能</li>
+            <li><strong>予測分析の導入</strong>: 需要予測により事前準備を効率化</li>
+            <li><strong>保安警告システムの強化</strong>: AI活用によるリスク予測精度向上</li>
+            <li><strong>スタッフトレーニング強化</strong>: 緊急時対応能力の向上</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>結論</h2>
+        <p>グリーンNH₃バンカリング港湾管理システムは、目標値を上回る高いパフォーマンスを示しており、
+        特に許可処理の自動化と処理時間の短縮において顕著な成果を上げています。
+        今後は提案された改善策を実施することで、さらなる効率化が期待できます。</p>
+    </div>
+</body>
+</html>
+            `;
+            
+            // Create blob and download
+            const blob = new Blob([reportContent], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${reportNames[type]}_${new Date().toISOString().split('T')[0]}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            closeReportModal();
+            
+            // Show success message
+            alert(`${reportNames[type]}を生成しました。`);
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('reportModal');
+            if (event.target === modal) {
+                closeReportModal();
+            }
+        }
+    </script>
+</body>
+</html>
